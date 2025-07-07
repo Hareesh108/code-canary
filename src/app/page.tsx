@@ -1,13 +1,44 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import * as webllm from "@mlc-ai/web-llm";
 
 export default function Home() {
   const [code, setCode] = useState("");
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [loading, setLoading] = useState(false);
+  const [llmReady, setLlmReady] = useState(false);
+  const [llmError, setLlmError] = useState<string | null>(null);
   const codeInputRef = useRef<HTMLTextAreaElement>(null);
+  const engineRef = useRef<webllm.MLCEngineInterface | null>(null);
+
+  // Initialize WebLLM on mount
+  useEffect(() => {
+    let isMounted = true;
+    async function initLLM() {
+      try {
+        const engine = await webllm.CreateMLCEngine(
+          "TinyLlama-1.1B-Chat-v1.0-q4f32_1-MLC"
+        );
+        if (isMounted) {
+          engineRef.current = engine;
+          setLlmReady(true);
+        }
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          setLlmError("Failed to load LLM: " + err.message);
+        } else {
+          setLlmError("Failed to load LLM: Unknown error");
+        }
+      }
+    }
+    initLLM();
+    return () => {
+      isMounted = false;
+      engineRef.current = null;
+    };
+  }, []);
 
   // Drag and drop handler
   const handleDrop = (e: React.DragEvent<HTMLTextAreaElement>) => {
@@ -26,16 +57,34 @@ export default function Home() {
     e.preventDefault();
   };
 
-  // Placeholder for LLM call
+  // Call WebLLM
   const handleAsk = async () => {
     setLoading(true);
     setAnswer("");
-    // TODO: Integrate with WebLLM here
-    setTimeout(() => {
-      setAnswer("[LLM answer will appear here]");
+    setLlmError(null);
+    try {
+      if (!engineRef.current) throw new Error("LLM not ready");
+      const prompt = `Given the following code:\n\n${code}\n\nAnd the question: ${question}\n\nAnswer:`;
+      const reply = await engineRef.current.chat.completions.create({
+        messages: [
+          { role: "system", content: "You are a helpful code assistant." },
+          { role: "user", content: prompt },
+        ],
+        stream: false,
+      });
+      setAnswer(reply.choices?.[0]?.message?.content || "No answer returned.");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setLlmError("Error: " + err.message);
+      } else {
+        setLlmError("Error: Unknown error");
+      }
+    } finally {
       setLoading(false);
-    }, 1200);
+    }
   };
+
+  console.log("llmError:", llmError);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 gap-8 bg-gray-50 dark:bg-black">
@@ -61,10 +110,13 @@ export default function Home() {
         <button
           className="mt-2 px-4 py-2 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:opacity-50"
           onClick={handleAsk}
-          disabled={!code || !question || loading}
+          disabled={!code || !question || loading || !llmReady}
         >
-          {loading ? "Thinking..." : "Ask"}
+          {loading ? "Thinking..." : llmReady ? "Ask" : "Loading model..."}
         </button>
+        {llmError && (
+          <div className="text-red-600 text-sm mt-2">{llmError}</div>
+        )}
         <div className="mt-4 min-h-[48px]">
           {answer && (
             <div className="bg-zinc-100 dark:bg-zinc-800 rounded p-3 text-sm border border-zinc-200 dark:border-zinc-700">
