@@ -13,6 +13,7 @@
 > **Note:**
 > For best results, enable the following Chrome flags for WebGPU development:
 > Search : chrome://flags/
+> Use new tab
 >
 > - **Unsafe WebGPU Support**: Enables best-effort WebGPU support on unsupported configurations. Only use for your own development. May expose security issues.
 >   - Go to: `chrome://flags/#enable-unsafe-webgpu`
