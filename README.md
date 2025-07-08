@@ -2,6 +2,14 @@
 
 > Your friendly AI coding companion.
 
+---
+
+**Code Canary** is a modern, privacy-friendly AI assistant for developers. Paste your code, ask questions, or chat in real time—right in your browser, powered by local LLMs and WebGPU acceleration. Designed for a beautiful, fast, and secure developer experience.
+
+---
+
+## 🚦 WebGPU Setup (Required for Local LLM)
+
 > **Note:**
 > For best results, enable the following Chrome flags for WebGPU development:
 >
@@ -15,39 +23,70 @@
 >
 > These are available on Mac, Windows, Linux, ChromeOS, and Android.
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+---
 
-## Getting Started
+## ✨ Features
 
-First, run the development server:
+- **Answer Mode:** Paste code and ask a question, get a single, focused answer.
+- **Chatbot Mode:** Multi-turn, streaming chat with code context and history.
+- **Modern UI:** Beautiful yellow/gold theme, dark mode, and responsive design.
+- **Drag & Drop:** Instantly add code by dragging files into the chat.
+- **Local & Private:** All AI runs in your browser—no code or questions leave your device.
+- **WebGPU Acceleration:** Fast, hardware-accelerated LLM inference (see setup above).
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🚀 Getting Started
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Install dependencies:**
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
 
-## Learn More
+2. **Run the development server:**
 
-To learn more about Next.js, take a look at the following resources:
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. **Open your browser:**
+   - Go to [http://localhost:3000](http://localhost:3000)
+   - Make sure you have enabled the required WebGPU flags (see above)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 🛠 Usage
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Switch modes** at the top: "Answer" for single Q&A, "Chatbot" for conversation.
+- **Paste or drag code** into the input area.
+- **Ask questions** about your code, or chat naturally.
+- **See answers stream in real time** (in Chatbot mode).
+- **All processing is local**—your code and questions stay private.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+## 📁 Project Structure
+
+- `src/app/page.tsx` — Main UI and logic
+- `public/` — Static assets (add your logo here!)
+- `package.json` — Project dependencies
+
+---
+
+## 🙏 Credits
+
+- Built with [Next.js](https://nextjs.org), [@mlc-ai/web-llm](https://github.com/mlc-ai/web-llm), and [Tailwind CSS](https://tailwindcss.com/).
+- Inspired by the open-source AI and developer tools community.
+
+---
+
+## 📢 Feedback & Contributions
+
+We welcome feedback, issues, and contributions! Please open an issue or PR.
+
+---
