@@ -1,3 +1,20 @@
+# Code Canary 🐤
+
+> Your friendly AI coding companion.
+
+> **Note:**
+> For best results, enable the following Chrome flags for WebGPU development:
+>
+> - **Unsafe WebGPU Support**: Enables best-effort WebGPU support on unsupported configurations. Only use for your own development. May expose security issues.
+>   - Go to: `chrome://flags/#enable-unsafe-webgpu`
+>   - Set to: **Enabled**
+>
+> - **WebGPU Developer Features**: Enables web applications to access WebGPU features intended only for development.
+>   - Go to: `chrome://flags/#enable-webgpu-developer-features`
+>   - Set to: **Enabled**
+>
+> These are available on Mac, Windows, Linux, ChromeOS, and Android.
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

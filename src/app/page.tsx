@@ -29,6 +29,8 @@ export default function Home() {
   const [answerLoading, setAnswerLoading] = useState(false);
   const [answerError, setAnswerError] = useState<string | null>(null);
 
+  const [showGpuTip, setShowGpuTip] = useState(false);
+
   const addDebugInfo = (info: string) => {
     setDebugInfo((prev) => [
       ...prev,
@@ -228,169 +230,243 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen flex flex-row bg-gray-50 dark:bg-black">
+    <div className="min-h-screen flex flex-row bg-gradient-to-br from-white via-yellow-50 to-yellow-100 dark:from-zinc-900 dark:via-yellow-950 dark:to-zinc-900">
       <div className="flex flex-col flex-1 items-center justify-center p-4">
-        <h1 className="text-2xl font-bold mb-2">Dev Helper Agent</h1>
-        {/* Mode selector */}
-        <div className="mb-4 flex gap-4 items-center">
-          <label className="font-semibold">Mode:</label>
-          <select
-            className="border rounded px-2 py-1 bg-zinc-100 dark:bg-zinc-800"
-            value={mode}
-            onChange={(e) => setMode(e.target.value as "answer" | "chatbot")}
-          >
-            <option value="answer">Answer</option>
-            <option value="chatbot">Chatbot</option>
-          </select>
-        </div>
-        {/* Answer mode UI */}
-        {mode === "answer" && (
-          <div className="w-full max-w-2xl flex flex-col gap-4 bg-white dark:bg-zinc-900 rounded-lg shadow p-6">
-            <label className="font-semibold">
-              Paste your code or drag a file (optional):
-            </label>
-            <textarea
-              className="w-full min-h-[120px] rounded border p-2 font-mono text-sm bg-zinc-100 dark:bg-zinc-800 focus:outline-none focus:ring"
-              value={answerCode}
-              onChange={(e) => setAnswerCode(e.target.value)}
-              onDrop={(e) => {
-                e.preventDefault();
-                const file = e.dataTransfer.files[0];
-                if (file) {
-                  const reader = new FileReader();
-                  reader.onload = (event) => {
-                    setAnswerCode(event.target?.result as string);
-                  };
-                  reader.readAsText(file);
-                }
-              }}
-              onDragOver={(e) => e.preventDefault()}
-              placeholder="Paste code here or drag a file..."
-              disabled={answerLoading || !llmReady}
-            />
-            <label className="font-semibold mt-2">Your question:</label>
-            <textarea
-              className="w-full min-h-[48px] rounded border p-2 text-sm bg-zinc-100 dark:bg-zinc-800 focus:outline-none focus:ring"
-              value={answerQuestion}
-              onChange={(e) => setAnswerQuestion(e.target.value)}
-              placeholder="What do you want to ask about this code?"
-              disabled={answerLoading || !llmReady}
-            />
-            <button
-              className="mt-2 px-4 py-2 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:opacity-50"
-              onClick={handleAnswer}
-              disabled={!answerQuestion.trim() || answerLoading || !llmReady}
-            >
-              {answerLoading
-                ? "Thinking..."
-                : llmReady
-                ? "Ask"
-                : "Loading model..."}
-            </button>
-            {answerError && (
-              <div className="text-red-600 text-sm mt-2">{answerError}</div>
-            )}
-            <div className="mt-4 min-h-[48px]">
-              {answerResult && (
-                <div className="bg-zinc-100 dark:bg-zinc-800 rounded p-3 text-sm border border-zinc-200 dark:border-zinc-700">
-                  <strong>Answer:</strong>
-                  <div className="mt-1 whitespace-pre-wrap">{answerResult}</div>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-        {/* Chatbot mode UI (current chat UI) */}
-        {mode === "chatbot" && (
-          <div className="w-full max-w-2xl flex flex-col bg-white dark:bg-zinc-900 rounded-lg shadow h-[70vh]">
-            {/* Chat messages */}
-            <div
-              className="flex-1 overflow-y-auto p-4"
-              onDrop={handleDrop}
-              onDragOver={handleDragOver}
-              style={{ minHeight: 0 }}
-            >
-              {messages.length === 0 && (
-                <div className="text-gray-400 text-center mt-8">
-                  Start by pasting code or asking a question!
-                </div>
-              )}
-              {messages.map((msg, idx) => (
-                <div
-                  key={idx}
-                  className={`flex mb-3 ${
-                    msg.role === "user" ? "justify-end" : "justify-start"
-                  }`}
+        <div className="flex flex-col items-center w-full max-w-3xl">
+          <div className="flex items-center gap-2 mb-6 w-full justify-center relative">
+            <h1 className="text-4xl font-extrabold text-yellow-700 dark:text-yellow-300 drop-shadow-sm tracking-tight pb-1 border-b-4 border-yellow-300 dark:border-yellow-700 w-fit flex items-center gap-2">
+              <span>Code Canary</span>
+              <span role="img" aria-label="canary" className="text-3xl">
+                🐤
+              </span>
+            </h1>
+            <div className="relative">
+              <button
+                aria-label="WebGPU Info"
+                className="ml-3 p-1 rounded-full bg-yellow-100 dark:bg-yellow-800 hover:bg-yellow-200 dark:hover:bg-yellow-700 border border-yellow-300 dark:border-yellow-700 text-yellow-700 dark:text-yellow-200 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                onClick={() => setShowGpuTip((v) => !v)}
+                onMouseEnter={() => setShowGpuTip(true)}
+                onMouseLeave={() => setShowGpuTip(false)}
+                tabIndex={0}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  className="w-6 h-6"
                 >
-                  <div
-                    className={`rounded-lg px-4 py-2 max-w-[80%] whitespace-pre-wrap text-sm shadow
-                    ${
-                      msg.role === "user"
-                        ? "bg-blue-600 text-white"
-                        : msg.role === "bot"
-                        ? "bg-zinc-100 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700"
-                        : "bg-green-100 text-green-900 font-mono border border-green-300"
-                    }
-                  `}
-                  >
-                    {msg.role === "code" ? (
-                      <>
-                        <strong>Code:</strong> <br />
-                        {msg.content}
-                      </>
-                    ) : (
-                      msg.content
-                    )}
+                  <path
+                    fillRule="evenodd"
+                    d="M18 10A8 8 0 11 2 10a8 8 0 0116 0zm-8-3a1 1 0 100-2 1 1 0 000 2zm-1 2a1 1 0 012 0v4a1 1 0 11-2 0v-4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+              {showGpuTip && (
+                <div className="absolute left-1/2 -translate-x-1/2 mt-2 w-80 z-50 bg-white dark:bg-zinc-900 text-yellow-900 dark:text-yellow-100 border border-yellow-200 dark:border-yellow-700 rounded-xl shadow-xl p-4 text-sm font-medium">
+                  <div className="font-bold mb-1 text-yellow-700 dark:text-yellow-300">
+                    WebGPU Setup Reminder
+                  </div>
+                  <ul className="list-disc pl-5 mb-1">
+                    <li>
+                      Enable{" "}
+                      <span className="font-semibold">
+                        Unsafe WebGPU Support
+                      </span>{" "}
+                      (<code>chrome://flags/#enable-unsafe-webgpu</code>)
+                    </li>
+                    <li>
+                      Enable{" "}
+                      <span className="font-semibold">
+                        WebGPU Developer Features
+                      </span>{" "}
+                      (
+                      <code>
+                        chrome://flags/#enable-webgpu-developer-features
+                      </code>
+                      )
+                    </li>
+                  </ul>
+                  <div className="text-xs text-yellow-700 dark:text-yellow-300">
+                    For development only. May expose security issues. Applies to
+                    Chrome, Edge, and compatible browsers.
                   </div>
                 </div>
-              ))}
-              <div ref={chatEndRef} />
-            </div>
-            {/* Input area */}
-            <div className="p-4 border-t border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900">
-              <textarea
-                className="w-full min-h-[48px] rounded border p-2 text-sm bg-zinc-100 dark:bg-zinc-800 focus:outline-none focus:ring resize-none"
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Type your question or message... (Shift+Enter for newline)"
-                disabled={loading || !llmReady}
-              />
-              <div className="flex justify-between items-center mt-2">
-                <div className="text-xs text-gray-500">
-                  Drag code files into chat to add code context.
-                </div>
-                <button
-                  className="px-4 py-2 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:opacity-50"
-                  onClick={handleSend}
-                  disabled={!input.trim() || loading || !llmReady}
-                >
-                  {loading
-                    ? "Thinking..."
-                    : llmReady
-                    ? "Send"
-                    : "Loading model..."}
-                </button>
-              </div>
-              {llmError && (
-                <div className="text-red-600 text-sm mt-2">{llmError}</div>
               )}
             </div>
           </div>
-        )}
-        {/* Debug Information */}
-        <details className="mt-4">
-          <summary className="cursor-pointer text-sm text-gray-600 dark:text-gray-400">
-            Debug Information
-          </summary>
-          <div className="mt-2 text-xs bg-gray-100 dark:bg-gray-800 p-2 rounded max-h-40 overflow-y-auto">
-            {debugInfo.map((info, index) => (
-              <div key={index} className="mb-1">
-                {info}
-              </div>
-            ))}
+          {/* Mode selector */}
+          <div className="mb-6 flex gap-4 items-center w-full justify-center">
+            <label className="font-semibold text-yellow-800 dark:text-yellow-200">
+              Mode:
+            </label>
+            <select
+              className="border border-yellow-200 dark:border-yellow-700 rounded-lg px-3 py-2 bg-white dark:bg-zinc-900 text-yellow-900 dark:text-yellow-100 font-semibold shadow focus:outline-yellow-400"
+              value={mode}
+              onChange={(e) => setMode(e.target.value as "answer" | "chatbot")}
+            >
+              <option value="answer">Answer</option>
+              <option value="chatbot">Chatbot</option>
+            </select>
           </div>
-        </details>
+          {/* Answer mode UI */}
+          {mode === "answer" && (
+            <div className="w-full max-w-2xl flex flex-col gap-4 bg-white dark:bg-zinc-900 rounded-2xl shadow-xl p-8 border border-yellow-100 dark:border-yellow-800">
+              <label className="font-semibold text-yellow-800 dark:text-yellow-200">
+                Paste your code or drag a file (optional):
+              </label>
+              <textarea
+                className="w-full min-h-[120px] rounded-xl border border-yellow-100 dark:border-yellow-800 p-3 font-mono text-sm bg-yellow-50 dark:bg-yellow-950 text-yellow-900 dark:text-yellow-100 focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                value={answerCode}
+                onChange={(e) => setAnswerCode(e.target.value)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  const file = e.dataTransfer.files[0];
+                  if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                      setAnswerCode(event.target?.result as string);
+                    };
+                    reader.readAsText(file);
+                  }
+                }}
+                onDragOver={(e) => e.preventDefault()}
+                placeholder="Paste code here or drag a file..."
+                disabled={answerLoading || !llmReady}
+              />
+              <label className="font-semibold mt-2 text-yellow-800 dark:text-yellow-200">
+                Your question:
+              </label>
+              <textarea
+                className="w-full min-h-[48px] rounded-xl border border-yellow-100 dark:border-yellow-800 p-3 text-sm bg-yellow-50 dark:bg-yellow-950 text-yellow-900 dark:text-yellow-100 focus:outline-none focus:ring-2 focus:ring-yellow-300"
+                value={answerQuestion}
+                onChange={(e) => setAnswerQuestion(e.target.value)}
+                placeholder="What do you want to ask about this code?"
+                disabled={answerLoading || !llmReady}
+              />
+              <button
+                className="mt-2 px-6 py-2 rounded-xl bg-gradient-to-r from-yellow-400 to-yellow-500 text-white font-bold shadow-lg hover:from-yellow-500 hover:to-yellow-400 transition disabled:opacity-50 border border-yellow-200 dark:border-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                onClick={handleAnswer}
+                disabled={!answerQuestion.trim() || answerLoading || !llmReady}
+              >
+                {answerLoading
+                  ? "Thinking..."
+                  : llmReady
+                  ? "Ask"
+                  : "Loading model..."}
+              </button>
+              {answerError && (
+                <div className="text-red-600 text-sm mt-2">{answerError}</div>
+              )}
+              <div className="mt-4 min-h-[48px]">
+                {answerResult && (
+                  <div className="bg-yellow-50 dark:bg-yellow-900 rounded-xl p-4 text-sm border border-yellow-100 dark:border-yellow-800 text-yellow-900 dark:text-yellow-100 shadow">
+                    <strong className="text-yellow-700 dark:text-yellow-300">
+                      Answer:
+                    </strong>
+                    <div className="mt-1 whitespace-pre-wrap">
+                      {answerResult}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+          {/* Chatbot mode UI (current chat UI) */}
+          {mode === "chatbot" && (
+            <div className="w-full max-w-2xl flex flex-col bg-white dark:bg-zinc-900 rounded-2xl shadow-xl h-[70vh] border border-yellow-100 dark:border-yellow-800">
+              {/* Chat messages */}
+              <div
+                className="flex-1 overflow-y-auto p-6"
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                style={{ minHeight: 0 }}
+              >
+                {messages.length === 0 && (
+                  <div className="text-yellow-400 text-center mt-8">
+                    Start by pasting code or asking a question!
+                  </div>
+                )}
+                {messages.map((msg, idx) => (
+                  <div
+                    key={idx}
+                    className={`flex mb-4 ${
+                      msg.role === "user" ? "justify-end" : "justify-start"
+                    }`}
+                  >
+                    <div
+                      className={`rounded-2xl px-5 py-3 max-w-[80%] whitespace-pre-wrap text-base shadow-lg font-medium
+                    ${
+                      msg.role === "user"
+                        ? "bg-gradient-to-br from-yellow-400 to-yellow-500 text-white border border-yellow-300"
+                        : msg.role === "bot"
+                        ? "bg-yellow-50 dark:bg-yellow-950 border border-yellow-100 dark:border-yellow-800 text-yellow-900 dark:text-yellow-100"
+                        : "bg-yellow-100 dark:bg-yellow-800 text-yellow-900 font-mono border border-yellow-200 dark:border-yellow-700"
+                    }
+                  `}
+                    >
+                      {msg.role === "code" ? (
+                        <>
+                          <strong className="text-yellow-700 dark:text-yellow-300">
+                            Code:
+                          </strong>{" "}
+                          <br />
+                          {msg.content}
+                        </>
+                      ) : (
+                        msg.content
+                      )}
+                    </div>
+                  </div>
+                ))}
+                <div ref={chatEndRef} />
+              </div>
+              {/* Input area */}
+              <div className="p-6 border-t border-yellow-100 dark:border-yellow-800 bg-white dark:bg-zinc-900 rounded-b-2xl">
+                <textarea
+                  className="w-full min-h-[48px] rounded-xl border border-yellow-100 dark:border-yellow-800 p-3 text-base bg-yellow-50 dark:bg-yellow-950 text-yellow-900 dark:text-yellow-100 focus:outline-none focus:ring-2 focus:ring-yellow-300 resize-none"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Type your question or message... (Shift+Enter for newline)"
+                  disabled={loading || !llmReady}
+                />
+                <div className="flex justify-between items-center mt-3">
+                  <div className="text-xs text-yellow-700 dark:text-yellow-300">
+                    Drag code files into chat to add code context.
+                  </div>
+                  <button
+                    className="px-6 py-2 rounded-xl bg-gradient-to-r from-yellow-400 to-yellow-500 text-white font-bold shadow-lg hover:from-yellow-500 hover:to-yellow-400 transition disabled:opacity-50 border border-yellow-200 dark:border-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-400"
+                    onClick={handleSend}
+                    disabled={!input.trim() || loading || !llmReady}
+                  >
+                    {loading
+                      ? "Thinking..."
+                      : llmReady
+                      ? "Send"
+                      : "Loading model..."}
+                  </button>
+                </div>
+                {llmError && (
+                  <div className="text-red-600 text-sm mt-2">{llmError}</div>
+                )}
+              </div>
+            </div>
+          )}
+          {/* Debug Information */}
+          <details className="mt-6 w-full max-w-2xl">
+            <summary className="cursor-pointer text-sm text-yellow-700 dark:text-yellow-300">
+              Debug Information
+            </summary>
+            <div className="mt-2 text-xs bg-yellow-50 dark:bg-yellow-950 p-3 rounded-xl max-h-40 overflow-y-auto border border-yellow-100 dark:border-yellow-800 text-yellow-900 dark:text-yellow-100">
+              {debugInfo.map((info, index) => (
+                <div key={index} className="mb-1">
+                  {info}
+                </div>
+              ))}
+            </div>
+          </details>
+        </div>
       </div>
     </div>
   );
