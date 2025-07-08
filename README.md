@@ -1,6 +1,6 @@
 # Code Canary 🐤
 
-> Your friendly AI coding companion.
+> Your friendly, privacy-friendly AI coding companion. All AI runs locally in your browser with WebGPU acceleration.
 
 ---
 
