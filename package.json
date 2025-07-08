@@ -1,5 +1,5 @@
 {
-  "name": "dev-helper-agent",
+  "name": "code-canary",
   "version": "0.1.0",
   "private": true,
   "scripts": {
